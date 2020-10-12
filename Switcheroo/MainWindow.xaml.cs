@@ -25,6 +25,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -35,6 +36,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using ManagedWinapi;
 using ManagedWinapi.Windows;
+using NHibernateGenDbSqlite;
 using Switcheroo.Core;
 using Switcheroo.Core.Matchers;
 using Switcheroo.Properties;
@@ -60,6 +62,7 @@ namespace Switcheroo
         private AboutWindow _aboutWindow;
         private AltTabHook _altTabHook;
         private SystemWindow _foregroundWindow;
+        private string _currentInputKeys = "";
         private bool _altTabAutoSwitch;
 
         public MainWindow()
@@ -108,6 +111,102 @@ namespace Switcheroo
                     tb.Text = "";
                     tb.IsEnabled = true;
                     tb.Focus();
+                }
+                else if (args.SystemKey == Key.D1)
+                {
+                    var items = lb.Items;
+                    for (int i = 0; i < items.Count - 1; i++)
+                    {
+                        var lastwin = (AppWindowViewModel)items[items.Count - 1];
+                        var win = (AppWindowViewModel)items[i];
+                        if (win.ProcessTitle.Equals(lastwin.ProcessTitle))
+                        {
+                            lb.SelectedItem = win;
+                            Switch();
+                            break;
+                        }
+                    }
+                }
+                else if (args.SystemKey == Key.D2)
+                {
+                    var items = lb.Items;
+                    AppWindowViewModel findwin = (AppWindowViewModel)items[0];
+                    if (findwin.ProcessTitle.Equals(((AppWindowViewModel)items[items.Count - 1]).ProcessTitle) && items.Count > 2)
+                    {
+                        findwin = (AppWindowViewModel)items[1];
+                    }
+                    foreach (var item in items)
+                    {
+                        var win = (AppWindowViewModel)item;
+                        if (win.ProcessTitle.Equals(findwin.ProcessTitle) /*&& win != findwin*/)
+                        {
+                            lb.SelectedItem = win;
+                            Switch();
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    _currentInputKeys += WinRowEdit.MyParseKeyString(args.SystemKey);
+                    var items = lb.Items;
+                    var list = new List<AppWindowViewModel>();
+                    foreach (var item in lb.Items)
+                    {
+                        var win = (AppWindowViewModel)item;
+                        if (win.OpenHotKey.ToLower().StartsWith(_currentInputKeys.ToLower()))
+                        {
+                            var find = false;
+                            foreach (var tt in list)
+                            {
+                                if (tt.ProcessTitle.EndsWith(win.ProcessTitle))
+                                {
+                                    find = true;
+                                    break;
+                                }
+                            }
+                            if (!find)
+                                list.Add(win);
+                        }
+                    }
+
+                    if (list.Count == 1)
+                    {
+                        lb.SelectedItem = list.ElementAt(0);
+                        Switch();
+                    }
+                    else if (list.Count > 1)
+                    {
+                        if (args.SystemKey == Key.Enter)
+                        {
+                            lb.SelectedItem = list.ElementAt(0);
+                            foreach (var tt in list)
+                            {
+                                if (tt.OpenHotKey.ToLower().Equals(_currentInputKeys.ToLower()))
+                                {
+                                    lb.SelectedItem = tt;
+                                    break;
+                                }
+                            }
+                            Switch();
+                        }
+                    }
+                    else if (list.Count == 0)
+                    {
+                        // 不存在，如果有快捷键就直接打开
+                        if (args.SystemKey == Key.Enter)
+                        {
+                            var processname = WinRowEdit.GetOpenHotKeyProcessName(_currentInputKeys.ToLower());
+                            if (!string.IsNullOrEmpty(processname))
+                            {
+                                var exepath=WinRowEdit.GetExePath(processname);
+                                if (!string.IsNullOrEmpty(exepath))
+                                {
+                                    MyUtils.startExeAsync(exepath);
+                                }
+                            }
+                        }
+                    }
                 }
             };
 
@@ -265,10 +364,12 @@ namespace Switcheroo
         {
             _unfilteredWindowList = new WindowFinder().GetWindows().Select(window => new AppWindowViewModel(window)).ToList();
 
+            _currentInputKeys = "";
+
             var firstWindow = _unfilteredWindowList.FirstOrDefault();
 
             var foregroundWindowMovedToBottom = false;
-            
+
             // Move first window to the bottom of the list if it's related to the foreground window
             if (firstWindow != null && AreWindowsRelated(firstWindow.AppWindow, _foregroundWindow))
             {
@@ -282,9 +383,11 @@ namespace Switcheroo
 
             foreach (var window in _unfilteredWindowList)
             {
-                window.FormattedTitle = new XamlHighlighter().Highlight(new[] {new StringPart(window.AppWindow.Title)});
+                window.OpenHotKey = WinRowEdit.GetOpenHotKey(window.ProcessTitle);
+                window.ExePath = WinRowEdit.GetExePath(window.ProcessTitle);
+                window.FormattedTitle = new XamlHighlighter().Highlight(new[] { new StringPart(window.AppWindow.Title) });
                 window.FormattedProcessTitle =
-                    new XamlHighlighter().Highlight(new[] {new StringPart(window.AppWindow.ProcessTitle)});
+                    new XamlHighlighter().Highlight(new[] { new StringPart(window.AppWindow.ProcessTitle) });
             }
 
             lb.DataContext = null;
@@ -334,8 +437,8 @@ namespace Switcheroo
             SizeToContent = SizeToContent.WidthAndHeight;
 
             // Position the window in the center of the screen
-            Left = (SystemParameters.PrimaryScreenWidth/2) - (ActualWidth/2);
-            Top = (SystemParameters.PrimaryScreenHeight/2) - (ActualHeight/2);
+            Left = (SystemParameters.PrimaryScreenWidth / 2) - (ActualWidth / 2);
+            Top = (SystemParameters.PrimaryScreenHeight / 2) - (ActualHeight / 2);
         }
 
         /// <summary>
@@ -568,7 +671,7 @@ namespace Switcheroo
 
             foreach (var filterResult in filterResults)
             {
-                filterResult.AppWindow.FormattedTitle =
+                filterResult.AppWindow.FormattedTitle = filterResult.AppWindow.OpenHotKey + "--" +
                     GetFormattedTitleFromBestResult(filterResult.WindowTitleMatchResults);
                 filterResult.AppWindow.FormattedProcessTitle =
                     GetFormattedTitleFromBestResult(filterResult.ProcessTitleMatchResults);
@@ -606,7 +709,7 @@ namespace Switcheroo
             foreach (var win in windows)
             {
                 bool isClosed = await _windowCloser.TryCloseAsync(win);
-                if(isClosed)
+                if (isClosed)
                     RemoveWindow(win);
             }
 
@@ -722,6 +825,14 @@ namespace Switcheroo
         {
             NextItem,
             PreviousItem
+        }
+
+        private void MenuItem_SetKey_Click(object sender, RoutedEventArgs e)
+        {
+            var win = (AppWindowViewModel)lb.SelectedItem;
+            var w = new WinRowEdit();
+            w.SetData(win);
+            w.ShowDialog();
         }
     }
 }

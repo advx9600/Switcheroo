@@ -22,6 +22,10 @@ namespace Switcheroo
 {
     public class HotKey : ManagedWinapi.Hotkey
     {
+        public string OpenWithHotKey { get; private set; }
+        public string HideWins { get; private set; }
+        public string ExePath { get; private set; }
+
         public void LoadSettings()
         {
             KeyCode = (System.Windows.Forms.Keys) Properties.Settings.Default.HotKey;
@@ -29,6 +33,9 @@ namespace Switcheroo
             Alt = Properties.Settings.Default.Alt;
             Ctrl = Properties.Settings.Default.Ctrl;
             Shift = Properties.Settings.Default.Shift;
+            OpenWithHotKey = Properties.Settings.Default.OpenWithHotKey;
+            HideWins = Properties.Settings.Default.HideWins;
+            ExePath = Properties.Settings.Default.ExePath;
         }
 
         public void SaveSettings()
@@ -38,6 +45,10 @@ namespace Switcheroo
             Properties.Settings.Default.Alt = Alt;
             Properties.Settings.Default.Ctrl = Ctrl;
             Properties.Settings.Default.Shift = Shift;
+
+            Properties.Settings.Default.OpenWithHotKey = OpenWithHotKey ;
+            Properties.Settings.Default.HideWins = HideWins;
+            Properties.Settings.Default.ExePath = ExePath;
             Properties.Settings.Default.Save();
         }
     }

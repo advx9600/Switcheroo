@@ -25,6 +25,10 @@ namespace Switcheroo
             get { return AppWindow.Title; }
         }
 
+        public string OpenHotKey
+        {
+            set;get;
+        }
         public string ProcessTitle
         {
             get { return AppWindow.ProcessTitle; }
@@ -74,6 +78,8 @@ namespace Switcheroo
                 NotifyOfPropertyChange(() => IsBeingClosed);
             }
         }
+
+        public string ExePath { get; internal set; }
 
         #endregion
 
