@@ -113,6 +113,7 @@
                 <ListBox.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="modify"  Click="MenuItem_SetKey_Click"/>
+                        <MenuItem Header="exit"  Click="MenuItem_Exit_Click"/>
                     </ContextMenu>
                 </ListBox.ContextMenu>
                 <ListBox.ItemTemplate>

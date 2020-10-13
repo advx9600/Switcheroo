@@ -43,7 +43,7 @@ namespace Switcheroo
 
         private void SetExePath(string processname, string exepath)
         {
-            SetMyAttribute(Properties.Settings.Default.OpenWithHotKey, 2, processname, exepath);
+            SetMyAttribute(Properties.Settings.Default.ExePath, 2, processname, exepath);
         }
 
         public static String GetExePath(string processname)
@@ -114,6 +114,11 @@ namespace Switcheroo
 
         internal static string MyParseKeyString(Key systemKey)
         {
+            if (systemKey >= Key.D0 && systemKey <= Key.D9)
+            {
+                return systemKey.ToString().Substring(1);
+            }
+
             if (systemKey != Key.Enter)
                 return  systemKey.ToString();
             return "";

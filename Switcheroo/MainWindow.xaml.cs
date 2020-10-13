@@ -364,6 +364,15 @@ namespace Switcheroo
         {
             _unfilteredWindowList = new WindowFinder().GetWindows().Select(window => new AppWindowViewModel(window)).ToList();
 
+            foreach (var item in _unfilteredWindowList)
+            {
+                if (item.ProcessTitle.Equals("DesktopShortcut"))
+                {
+                    _unfilteredWindowList.Remove(item);
+                    break;
+                }
+            }
+
             _currentInputKeys = "";
 
             var firstWindow = _unfilteredWindowList.FirstOrDefault();
@@ -834,5 +843,10 @@ namespace Switcheroo
             w.SetData(win);
             w.ShowDialog();
         }
+        private void MenuItem_Exit_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+        
     }
 }
