@@ -64,6 +64,7 @@ namespace Switcheroo
         private SystemWindow _foregroundWindow;
         private string _currentInputKeys = "";
         private bool _altTabAutoSwitch;
+        private List<string> _noOpenHotKeyProcessnames = new List<string>();
 
         public MainWindow()
         {
@@ -97,6 +98,7 @@ namespace Switcheroo
             KeyDown += (sender, args) =>
             {
                 // Opacity is set to 0 right away so it appears that action has been taken right away...
+                Console.WriteLine("down:"+args.SystemKey);
                 if (args.Key == Key.Enter && !Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
                 {
                     Opacity = 0;
@@ -145,6 +147,66 @@ namespace Switcheroo
                             break;
                         }
                     }
+                }
+                else if (args.SystemKey >= Key.NumPad1 && args.SystemKey <= Key.NumPad9)
+                {
+                    var items = lb.Items;
+                    for (int i = 0; i < _noOpenHotKeyProcessnames.Count; i++)
+                    {
+                        var find = false;
+                        var processname = _noOpenHotKeyProcessnames[i];
+                        foreach (var item in lb.Items)
+                        {
+                            var win = (AppWindowViewModel)item;
+                            if (win.ProcessTitle.Equals(processname) && string.IsNullOrEmpty(WinRowEdit.GetOpenHotKey(processname)))
+                            {
+                                find = true;
+                                break;
+                            }
+                        }
+                        if (!find)
+                        {
+                            i--;
+                            _noOpenHotKeyProcessnames.Remove(processname);
+                        }
+                    }
+
+                    foreach (var item in lb.Items)
+                    {
+                        var win = (AppWindowViewModel)item;
+                        var find = false;
+                        foreach(var processname in _noOpenHotKeyProcessnames)
+                        {
+                            if (win.ProcessTitle.Equals(processname))
+                            {
+                                find = true;
+                                break;
+                            }
+                        }
+                        if (!find && string.IsNullOrEmpty(WinRowEdit.GetOpenHotKey(win.ProcessTitle)))
+                        {
+                            _noOpenHotKeyProcessnames.Add(win.ProcessTitle);
+                        }
+                    }
+
+                    for (int i=0;i< _noOpenHotKeyProcessnames.Count; i++)
+                    {
+                        if (i== args.SystemKey - Key.NumPad1)
+                        {
+                            foreach (var item in lb.Items)
+                            {
+                                var win = (AppWindowViewModel)item;
+                                if (win.ProcessTitle.Equals(_noOpenHotKeyProcessnames[i]))
+                                {
+                                    lb.SelectedItem = item;
+                                    Switch();
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    }
+
                 }
                 else
                 {
@@ -199,7 +261,7 @@ namespace Switcheroo
                             var processname = WinRowEdit.GetOpenHotKeyProcessName(_currentInputKeys.ToLower());
                             if (!string.IsNullOrEmpty(processname))
                             {
-                                var exepath=WinRowEdit.GetExePath(processname);
+                                var exepath = WinRowEdit.GetExePath(processname);
                                 if (!string.IsNullOrEmpty(exepath))
                                 {
                                     MyUtils.startExeAsync(exepath);
