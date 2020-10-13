@@ -20,6 +20,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Xml.Linq;
 using Switcheroo.Core.Matchers;
 
@@ -36,14 +37,28 @@ namespace Switcheroo.Core
             {
                 if (stringPart.IsMatch)
                 {
-                    xDocument.Root.Add(new XElement("Bold", stringPart.Value));
+                    xDocument.Root.Add(new XElement("Bold", ReplaceLowOrderASCIICharacters(stringPart.Value)));
                 }
                 else
                 {
-                    xDocument.Root.Add(new XText(stringPart.Value));
+                    xDocument.Root.Add(new XText(ReplaceLowOrderASCIICharacters(stringPart.Value)));
                 }
             }
             return string.Join("", xDocument.Root.Nodes().Select(x => x.ToString()).ToArray());
+        }
+
+        public static string ReplaceLowOrderASCIICharacters(string tmp)
+        {
+            StringBuilder info = new StringBuilder();
+            foreach (char cc in tmp)
+            {
+                int ss = (int)cc;
+                if (((ss >= 0) && (ss <= 8)) || ((ss >= 11) && (ss <= 12))
+                    || ((ss >= 14) && (ss <= 32)))
+                    info.AppendFormat(" ", ss);//&#x{0:X};
+                else info.Append(cc);
+            }
+            return info.ToString();
         }
     }
 }
