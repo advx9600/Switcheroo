@@ -107,7 +107,7 @@ namespace Switcheroo
                 {
                     Opacity = 0;
                 }
-                else if (args.SystemKey == Key.S && Keyboard.Modifiers.HasFlag(ModifierKeys.Alt))
+                else if (args.SystemKey == Key.F1 && Keyboard.Modifiers.HasFlag(ModifierKeys.Alt))
                 {
                     _altTabAutoSwitch = false;
                     tb.Text = "";
@@ -672,7 +672,7 @@ namespace Switcheroo
                 {
                     _altTabAutoSwitch = true;
                     tb.IsEnabled = false;
-                    tb.Text = "Press Alt + S to search";
+                    tb.Text = "Press Alt + F1 to search";
                 }
 
                 Opacity = 1;
