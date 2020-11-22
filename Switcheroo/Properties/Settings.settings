@@ -12,7 +12,7 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="HotKey" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">32</Value>
+      <Value Profile="(Default)">35</Value>
     </Setting>
     <Setting Name="Alt" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>

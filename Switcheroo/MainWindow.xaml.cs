@@ -256,9 +256,10 @@ namespace Switcheroo
                     else if (list.Count == 0)
                     {
                         // 不存在，如果有快捷键就直接打开
+                        // 先按space键，再按键 也是再一次打开
                         if (args.SystemKey == Key.Enter)
                         {
-                            var processname = WinRowEdit.GetOpenHotKeyProcessName(_currentInputKeys.ToLower());
+                            var processname = WinRowEdit.GetOpenHotKeyProcessName(_currentInputKeys.ToLower().Replace("space",""));
                             if (!string.IsNullOrEmpty(processname))
                             {
                                 var exepath = WinRowEdit.GetExePath(processname);
