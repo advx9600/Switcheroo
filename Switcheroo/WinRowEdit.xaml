@@ -12,6 +12,7 @@
         <Button Content="ok" Click="ButtonOk_Click" HorizontalAlignment="Left" Margin="250,203,0,0" VerticalAlignment="Top" Width="75"/>
         <Button Content="cancel" Click="ButtonCancel_Click" HorizontalAlignment="Left" Margin="58,203,0,0" VerticalAlignment="Top" Width="75"/>
         <TextBox x:Name="TBoxExePath" HorizontalAlignment="Left" Height="23" Margin="58,146,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="520"/>
+        <Button Content="set current" Click="ButtonSetCurrent_Click" HorizontalAlignment="Left" Margin="614,151,0,0" VerticalAlignment="Top" Width="75"/>
 
     </Grid>
 </Window>

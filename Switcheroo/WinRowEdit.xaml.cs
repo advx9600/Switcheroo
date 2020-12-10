@@ -112,6 +112,22 @@ namespace Switcheroo
             Close();
         }
 
+        private void ButtonSetCurrent_Click(object sender, RoutedEventArgs e)
+        {
+            var name = mWin.ProcessTitle;            
+            var ps = System.Diagnostics.Process.GetProcessesByName(name);
+            foreach(var p in ps)
+            {
+                try
+                {
+                    TBoxExePath.Text = (p.MainModule.FileName);                    
+                }catch(Exception e2)
+                {
+
+                }
+            }
+        }
+
         internal static string MyParseKeyString(Key systemKey)
         {
             if (systemKey >= Key.D0 && systemKey <= Key.D9)
