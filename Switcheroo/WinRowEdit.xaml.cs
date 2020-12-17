@@ -90,6 +90,9 @@ namespace Switcheroo
                     if (data[0].Equals(processname))
                     {
                         continue;
+                    }else if (type ==1 && data[1].Equals(attr))
+                    {
+                        continue;
                     }
                     newstr += strarry + ";";
                 }
